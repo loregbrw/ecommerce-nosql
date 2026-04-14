@@ -20,8 +20,9 @@ class PedidoMongoMapper:
         estado_entrega = None
         status_entrega = None
         if pedido.entrega is not None:
-            cidade_entrega = pedido.entrega.endereco_snapshot.cidade
-            estado_entrega = pedido.entrega.endereco_snapshot.estado
+            bairro_entrega = pedido.entrega.endereco.bairro
+            cidade_entrega = pedido.entrega.endereco.cidade
+            estado_entrega = pedido.entrega.endereco.estado
             status_entrega = pedido.entrega.status_entrega
 
         for indice, item in enumerate(pedido.itens, start=1):
@@ -35,13 +36,15 @@ class PedidoMongoMapper:
                     "status_pedido": pedido.status_pedido,
                     "cliente_nome": pedido.cliente.nome,
                     "cliente_email": pedido.cliente.email,
+                    "cliente_cpf": pedido.cliente.cpf,
+                    "bairro_entrega": bairro_entrega,
                     "cidade_entrega": cidade_entrega,
                     "estado_entrega": estado_entrega,
                     "status_entrega": status_entrega,
-                    "produto": item.nome_produto,
+                    "produto": item.nome,
                     "categoria": item.categoria,
                     "quantidade": item.quantidade,
-                    "valor_unitario": item.preco_unitario_compra,
+                    "valor_unitario": item.preco_unitario,
                     "subtotal": item.subtotal,
                     "valor_total": pedido.valor_total,
                 }

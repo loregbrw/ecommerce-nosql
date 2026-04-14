@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Optional
+from datetime import date
 
 
 @dataclass(slots=True)
@@ -15,17 +16,16 @@ class Cliente:
     id_cliente: int
     nome: str
     email: str
-
+    cpf: str
 
 @dataclass(slots=True)
-class EnderecoSnapshot:
+class Endereco:
     logradouro: str
-    numero: str
+    numero: int
     bairro: str
     cidade: str
     estado: str
     cep: str
-
 
 @dataclass(slots=True)
 class Pagamento:
@@ -34,43 +34,42 @@ class Pagamento:
     valor_pago: float
     parcelas: int
 
+@dataclass(slots=True)
+class Cupom:
+    id_cupom: int
+    codigo: str
+    tipo_desconto: str
+    valor_desconto: float
 
 @dataclass(slots=True)
 class Entrega:
     status_entrega: str
     transportadora: str
     codigo_rastreio: str
-    endereco_snapshot: EnderecoSnapshot
-
+    endereco: Endereco
+    valor_frete: float = 0.0
 
 @dataclass(slots=True)
 class ItemPedido:
     id_produto: int
-    produto_ref: int
-    id_variacao: Optional[int]
-    nome_produto: str
-    sku: Optional[str]
-    variacao_snapshot: Optional[str]
-    categoria: str
+    nome: str
     quantidade: int
-    preco_unitario_compra: float
-    subtotal: float
-
+    sku: str
+    variacao: str
+    categoria: str
+    preco_unitario: float = 0.0
+    subtotal: float = 0.0
 
 @dataclass(slots=True)
 class Pedido:
     id_pedido: int
     data_pedido: str
     status_pedido: str
-    cliente_ref: int
     cliente: Cliente
-    cupom: Optional[dict]
+    cupom: Cupom
     pagamento: Optional[Pagamento]
     entrega: Optional[Entrega]
     itens: list[ItemPedido] = field(default_factory=list)
-    valor_produtos: float = 0.0
-    valor_frete: float = 0.0
-    valor_desconto: float = 0.0
     valor_total: float = 0.0
 
 
@@ -79,7 +78,6 @@ class Vendedor:
     id_vendedor: int
     nome_loja: str
     ativo: bool
-
 
 @dataclass(slots=True)
 class ResumoAvaliacao:

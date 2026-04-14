@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from src.models.domain import (
     Cliente,
-    EnderecoSnapshot,
+    Endereco,
     Entrega,
     ItemPedido,
     Pagamento,
+    Cupom,
     Pedido,
     Produto,
     ResumoAvaliacao,
@@ -92,6 +93,7 @@ class SQLiteRepository:
             SELECT p.*,
                    c.nome AS cliente_nome,
                    c.email AS cliente_email,
+                   c.cpf AS cliente_cpf,
                    cu.codigo AS cupom_codigo,
                    cu.tipo_desconto AS cupom_tipo,
                    cu.valor_desconto AS cupom_valor
@@ -120,14 +122,12 @@ class SQLiteRepository:
             itens = [
                 ItemPedido(
                     id_produto=int(item["id_produto"]),
-                    produto_ref=int(item["id_produto"]),
-                    id_variacao=None if item["id_variacao"] is None else int(item["id_variacao"]),
-                    nome_produto=item["nome_produto_snapshot"],
+                    nome=item["nome_produto_snapshot"],
                     sku=item["sku_snapshot"],
-                    variacao_snapshot=item["variacao_snapshot"],
+                    variacao=item["variacao_snapshot"],
                     categoria=item["categoria_snapshot"],
                     quantidade=int(item["quantidade"]),
-                    preco_unitario_compra=float(item["preco_unitario_compra"]),
+                    preco_unitario=float(item["preco_unitario_compra"]),
                     subtotal=float(item["subtotal"]),
                 )
                 for item in item_rows
@@ -148,7 +148,7 @@ class SQLiteRepository:
                     status_entrega=entrega_row["status_entrega"],
                     transportadora=entrega_row["transportadora"],
                     codigo_rastreio=entrega_row["codigo_rastreio"],
-                    endereco_snapshot=EnderecoSnapshot(
+                    endereco=Endereco(
                         logradouro=entrega_row["logradouro_snapshot"],
                         numero=entrega_row["numero_snapshot"],
                         bairro=entrega_row["bairro_snapshot"],
@@ -156,6 +156,7 @@ class SQLiteRepository:
                         estado=entrega_row["estado_snapshot"],
                         cep=entrega_row["cep_snapshot"],
                     ),
+                    valor_frete=float(entrega_row["valor_entrega"]),
                 )
 
             cupom = None
@@ -176,14 +177,12 @@ class SQLiteRepository:
                     id_cliente=int(row["id_cliente"]),
                     nome=row["cliente_nome"],
                     email=row["cliente_email"],
+                    cpf=row["cliente_cpf"]
                 ),
                 cupom=cupom,
                 pagamento=pagamento,
                 entrega=entrega,
                 itens=itens,
-                valor_produtos=float(row["valor_produtos"]),
-                valor_frete=float(row["valor_frete"]),
-                valor_desconto=float(row["valor_desconto"]),
                 valor_total=float(row["valor_total"]),
             )
             pedidos.append(pedido)
