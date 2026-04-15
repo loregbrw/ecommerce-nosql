@@ -156,23 +156,22 @@ class SQLiteRepository:
                         estado=entrega_row["estado_snapshot"],
                         cep=entrega_row["cep_snapshot"],
                     ),
-                    valor_frete=float(entrega_row["valor_entrega"]),
+                    valor_frete=float(row["valor_frete"]),
                 )
 
             cupom = None
             if row["id_cupom"] is not None:
-                cupom = {
-                    "id_cupom": int(row["id_cupom"]),
-                    "codigo": row["cupom_codigo"],
-                    "tipo_desconto": row["cupom_tipo"],
-                    "valor_desconto": float(row["cupom_valor"]),
-                }
+                cupom = Cupom(
+                    id_cupom=int(row["id_cupom"]),
+                    codigo=row["cupom_codigo"],
+                    tipo_desconto=row["cupom_tipo"],
+                    valor_desconto=float(row["cupom_valor"]),
+                )
 
             pedido = Pedido(
                 id_pedido=int(row["id_pedido"]),
                 data_pedido=row["data_pedido"],
                 status_pedido=row["status_pedido"],
-                cliente_ref=int(row["id_cliente"]),
                 cliente=Cliente(
                     id_cliente=int(row["id_cliente"]),
                     nome=row["cliente_nome"],
