@@ -54,7 +54,7 @@ class SQLiteManager:
                 id_cliente INTEGER PRIMARY KEY,
                 nome TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
-                telefone TEXT,
+                cpf TEXT,
                 data_cadastro TEXT NOT NULL,
                 ativo INTEGER NOT NULL DEFAULT 1
             );
