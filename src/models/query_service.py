@@ -19,7 +19,13 @@ class QueryService:
         return list(
             self.mongo.pedidos.find(
                 {"status_pedido": "pago"},
-                {"_id": 1, "id_pedido": 1, "cliente_nome": 1, "produto": 1, "valor_total": 1},
+                {
+                    "_id": 1,
+                    "id_pedido": 1,
+                    "cliente_nome": 1,
+                    "produto": 1,
+                    "valor_total": 1,
+                },
             ).limit(5)
         )
 
@@ -76,9 +82,58 @@ class QueryService:
         return list(
             self.mongo.pedidos.find(
                 {},
-                {"_id": 0, "id_pedido": 1, "data_pedido": 1, "cliente_nome": 1, "produto": 1, "valor_total": 1},
+                {
+                    "_id": 0,
+                    "id_pedido": 1,
+                    "data_pedido": 1,
+                    "cliente_nome": 1,
+                    "produto": 1,
+                    "valor_total": 1,
+                },
             )
             .sort("data_pedido", -1)
+            .skip((page - 1) * size)
+            .limit(size)
+        )
+
+    def consulta_resumo_pedidos(self) -> list[dict]:
+        return list(
+            self.mongo.pedidos.find(
+                {}, {"_id": 1, "cliente_nome": 1, "produto": 1, "valor_total": 1}
+            )
+            .sort("valor_total", -1)
+            .limit(5)
+        )
+
+    def consulta_pedidos_pago(self) -> list[dict]:
+        return list(
+            self.mongo.pedidos.find(
+                {"status_pedido": "pago"},
+                {"_id": 1, "cliente_nome": 1, "valor_total": 1},
+            )
+        )
+
+    def consulta_pedidos_status(self) -> list[dict]:
+        return list(
+            self.mongo.pedidos.find(
+                {"status_pedido": {"$in": ["pago", "entregue"]}},
+                {"_id": 1, "cliente_nome": 1, "status_pedido": 1, "valor_total": 1},
+            )
+        )
+
+    def consulta_pedidos_ordenacao(self) -> list[dict]:
+        return list(
+            self.mongo.pedidos.find(
+                {}, {"_id": 1, "cliente_nome": 1, "data_pedido": 1, "valor_total": 1}
+            )
+            .sort([("data_pedido", -1), ("_id", 1)])
+            .limit(5)
+        )
+
+    def consulta_pedidos_paginacao(self, page: int = 2, size: int = 3) -> list[dict]:
+        return list(
+            self.mongo.pedidos.find({}, {"_id": 1, "cliente_nome": 1, "valor_total": 1})
+            .sort("valor_total", -1)
             .skip((page - 1) * size)
             .limit(size)
         )
