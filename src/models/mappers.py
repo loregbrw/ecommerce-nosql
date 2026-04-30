@@ -36,7 +36,6 @@ class PedidoMongoMapper:
                     "status_pedido": pedido.status_pedido,
                     "cliente_nome": pedido.cliente.nome,
                     "cliente_email": pedido.cliente.email,
-                    "cliente_cpf": pedido.cliente.cpf,
                     "bairro_entrega": bairro_entrega,
                     "cidade_entrega": cidade_entrega,
                     "estado_entrega": estado_entrega,

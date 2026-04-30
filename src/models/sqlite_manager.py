@@ -54,7 +54,6 @@ class SQLiteManager:
                 id_cliente INTEGER PRIMARY KEY,
                 nome TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
-                cpf TEXT,
                 data_cadastro TEXT NOT NULL,
                 ativo INTEGER NOT NULL DEFAULT 1
             );
@@ -243,12 +242,11 @@ class SQLiteManager:
                 i,
                 self.fake.name(),
                 f"cliente{i}@email.com",
-                self.fake.phone_number(),
                 self.fake.date_between(start_date="-1y", end_date="today").isoformat(),
                 1,
             ))
         conn.executemany(
-            "INSERT INTO cliente VALUES (?, ?, ?, ?, ?, ?)", rows
+            "INSERT INTO cliente VALUES (?, ?, ?, ?, ?)", rows
         )
 
     def _insert_enderecos(self, conn: sqlite3.Connection, total: int) -> None:

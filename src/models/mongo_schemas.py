@@ -34,7 +34,7 @@ def pedido_validator() -> dict:
             ],
             "properties": {
                 "_id": {"bsonType": ["int", "long"]},
-                "data_pedido": {"bsonType": "date"},
+                "data_pedido": {"bsonType": "string"},
                 "status_pedido": {
                     "enum": ["pendente", "pago", "cancelado", "entregue"]
                 },
@@ -45,7 +45,6 @@ def pedido_validator() -> dict:
                         "id_cliente": {"bsonType": ["int", "long"]},
                         "nome": {"bsonType": "string"},
                         "email": {"bsonType": "string"},
-                        "cpf": {"bsonType": "string"}
                     }
                 },
                 "itens": {
@@ -53,12 +52,15 @@ def pedido_validator() -> dict:
                     "minItems": 1,
                     "items": {
                         "bsonType": "object",
-                        "required": ["id_produto", "nome", "quantidade", "preco_unitario"],
+                        "required": ["id_produto", "nome_produto_snapshot", "quantidade", "preco_unitario_compra"],
                         "properties": {
                             "id_produto": {"bsonType": ["int", "long"]},
-                            "nome": {"bsonType": "string"},
+                            "nome_produto_snapshot": {"bsonType": "string"},
+                            "sku_snapshot": {"bsonType": "string"},
+                            "variacao_snapshot": {"bsonType": "string"},
+                            "categoria_snapshot": {"bsonType": "string"},
                             "quantidade": {"bsonType": ["int", "long"], "minimum": 1},
-                            "preco_unitario": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0},
+                            "preco_unitario_compra": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0},
                             "subtotal": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0}
                         }
                     }
@@ -66,8 +68,8 @@ def pedido_validator() -> dict:
                 "pagamento": {
                     "bsonType": "object",
                     "properties": {
-                        "tipo_pagamento": {"enum": ["cartao_credito", "cartao_debito", "pix", "boleto"]},
-                        "status_pagamento": {"enum": ["pendente", "em_andamento", "concluido"]},
+                        "tipo_pagamento": {"enum": ["cartao", "pix", "boleto"]},
+                        "status_pagamento": {"enum": ["pendente", "aprovado", "recusado"]},
                         "valor": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0},
                         "parcelas": { "bsonType": "int" }
                     }
@@ -75,14 +77,15 @@ def pedido_validator() -> dict:
                 "entrega": {
                     "bsonType": "object",
                     "properties": {
-                        "status_entrega": {"enum": ["preparo", "despachado", "caminho", "entregue"]},
+                        "status_entrega": {"enum": ["pendente", "em_transporte", "entregue"]},
                         "transportadora": {"bsonType": "string"},
                         "codigo_rastreio": {"bsonType": "string"},
                         "endereco": {
                             "bsonType": "object",
                             "properties": {
                                 "logradouro": {"bsonType": "string"},
-                                "numero": {"bsonType": "int"},
+                                "numero": {"bsonType": "string"},
+                                "bairro": {"bsonType": "string"},
                                 "cidade": {"bsonType": "string"},
                                 "estado": {"bsonType": "string"},
                                 "cep": {"bsonType": "string"}

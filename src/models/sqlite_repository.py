@@ -93,7 +93,6 @@ class SQLiteRepository:
             SELECT p.*,
                    c.nome AS cliente_nome,
                    c.email AS cliente_email,
-                   c.cpf AS cliente_cpf,
                    cu.codigo AS cupom_codigo,
                    cu.tipo_desconto AS cupom_tipo,
                    cu.valor_desconto AS cupom_valor
@@ -176,7 +175,6 @@ class SQLiteRepository:
                     id_cliente=int(row["id_cliente"]),
                     nome=row["cliente_nome"],
                     email=row["cliente_email"],
-                    cpf=row["cliente_cpf"]
                 ),
                 cupom=cupom,
                 pagamento=pagamento,

@@ -16,12 +16,11 @@ class Cliente:
     id_cliente: int
     nome: str
     email: str
-    cpf: str
 
 @dataclass(slots=True)
 class Endereco:
     logradouro: str
-    numero: int
+    numero: str
     bairro: str
     cidade: str
     estado: str
@@ -66,7 +65,7 @@ class Pedido:
     data_pedido: str
     status_pedido: str
     cliente: Cliente
-    cupom: Cupom
+    cupom: Cupom | None
     pagamento: Optional[Pagamento]
     entrega: Optional[Entrega]
     itens: list[ItemPedido] = field(default_factory=list)
