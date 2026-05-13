@@ -25,6 +25,11 @@ class MenuView:
         print("6. Mostrar amostra de documentos")
         print("7. Executar consultas de exemplo")
         print("8. Mostrar caminhos de configuração carregados")
+        print("9. Testar configuração do Redis")
+        print("10. Consultar produto por ID (cache)")
+        print("11. Adicionar produto ao carrinho temporário")
+        print("12. Visualizar carrinho temporário")
+        print("13. Ver ranking de produtos mais consultados")
         print("0. Sair")
         print("=" * 72)
 
@@ -48,3 +53,6 @@ class MenuView:
             found = True
         if not found:
             print("Nenhum documento encontrado.")
+
+    def ask_input(self, message: str) -> str:
+        return input(message).strip()

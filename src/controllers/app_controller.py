@@ -11,8 +11,10 @@ from src.models.config_loader import ConfigLoader
 from src.models.mongo_manager import MongoManager
 from src.models.migration_service import MigrationService
 from src.models.query_service import QueryService
+from src.models.redis_manager import RedisManager
 from src.models.sqlite_manager import SQLiteManager
 from src.models.sqlite_repository import SQLiteRepository
+from src.services.redis_commerce_service import RedisCommerceService
 from src.views.menu_view import MenuView
 
 
@@ -23,9 +25,11 @@ class AppController:
         config_loader = ConfigLoader(self.project_root)
         sqlite_cfg = config_loader.load_sqlite_config()
         mongo_cfg = config_loader.load_mongodb_config()
+        redis_cfg = config_loader.load_redis_config()
 
         self.sqlite_cfg = sqlite_cfg
         self.mongo_cfg = mongo_cfg
+        self.redis_cfg = redis_cfg
 
         self.sqlite_manager = SQLiteManager(sqlite_cfg["db_path"])
         self.sqlite_repository = SQLiteRepository(self.sqlite_manager)
@@ -36,6 +40,20 @@ class AppController:
         )
         self.migration_service = MigrationService(self.sqlite_repository, self.mongo_manager)
         self.query_service = QueryService(self.mongo_manager)
+        self.redis_manager = RedisManager(
+            host=redis_cfg["host"],
+            port=redis_cfg["port"],
+            db=redis_cfg["db"],
+            password=redis_cfg["password"],
+            decode_responses=redis_cfg["decode_responses"],
+        )
+        self.redis_commerce_service = RedisCommerceService(
+            repository=self.sqlite_repository,
+            redis_manager=self.redis_manager,
+            key_prefix=redis_cfg["key_prefix"],
+            product_cache_ttl_seconds=redis_cfg["product_cache_ttl_seconds"],
+            cart_ttl_seconds=redis_cfg["cart_ttl_seconds"],
+        )
         self.view = MenuView()
 
     def run(self) -> None:
@@ -60,6 +78,16 @@ class AppController:
                     self._run_example_queries()
                 elif option == "8":
                     self._show_config_paths()
+                elif option == "9":
+                    self._test_redis()
+                elif option == "10":
+                    self._consultar_produto_por_id()
+                elif option == "11":
+                    self._adicionar_produto_carrinho()
+                elif option == "12":
+                    self._visualizar_carrinho()
+                elif option == "13":
+                    self._visualizar_ranking()
                 elif option == "0":
                     self.view.show_message("Encerrando o sistema.")
                     break
@@ -139,3 +167,47 @@ class AppController:
         self.view.show_message(f"Mongo ini : {self.mongo_cfg['source_file']}")
         self.view.show_message(f"Mongo uri : {self.mongo_cfg['uri']}")
         self.view.show_message(f"Database  : {self.mongo_cfg['database']}")
+        self.view.show_message(f"Redis ini : {self.redis_cfg['source_file']}")
+        self.view.show_message(
+            f"Redis conn: {self.redis_cfg['host']}:{self.redis_cfg['port']}/{self.redis_cfg['db']}"
+        )
+
+    def _test_redis(self) -> None:
+        ok, message = self.redis_manager.test_connection()
+        if ok:
+            self.view.show_success(message)
+        else:
+            self.view.show_error(message)
+
+    def _consultar_produto_por_id(self) -> None:
+        id_produto = int(self.view.ask_input("Informe o ID do produto: "))
+        produto = self.redis_commerce_service.consultar_produto_por_id(id_produto)
+        if produto is None:
+            self.view.show_error(f"Produto {id_produto} não encontrado.")
+            return
+        self.view.show_documents("Produto encontrado", [produto])
+
+    def _adicionar_produto_carrinho(self) -> None:
+        id_cliente = int(self.view.ask_input("Informe o ID do cliente: "))
+        id_produto = int(self.view.ask_input("Informe o ID do produto: "))
+        quantidade = int(self.view.ask_input("Informe a quantidade: "))
+        ok, message = self.redis_commerce_service.adicionar_ao_carrinho(
+            id_cliente=id_cliente, id_produto=id_produto, quantidade=quantidade
+        )
+        if ok:
+            self.view.show_success(message)
+        else:
+            self.view.show_error(message)
+
+    def _visualizar_carrinho(self) -> None:
+        id_cliente = int(self.view.ask_input("Informe o ID do cliente: "))
+        carrinho = self.redis_commerce_service.visualizar_carrinho(id_cliente)
+        if not carrinho["itens"]:
+            self.view.show_message(f"Carrinho temporário do cliente {id_cliente} está vazio.")
+            return
+        self.view.show_documents(f"Itens do carrinho do cliente {id_cliente}", carrinho["itens"])
+        self.view.show_message(f"Valor total: R$ {carrinho['valor_total']:.2f}")
+
+    def _visualizar_ranking(self) -> None:
+        ranking = self.redis_commerce_service.ranking_produtos_mais_consultados()
+        self.view.show_documents("Ranking de produtos mais consultados", ranking)
