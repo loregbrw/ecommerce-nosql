@@ -7,6 +7,11 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: senha123
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379
 
   mongo-express:
     image: mongo-express
@@ -18,5 +23,11 @@ services:
       ME_CONFIG_BASICAUTH_ENABLED: true
       ME_CONFIG_BASICAUTH_USERNAME: mongo
       ME_CONFIG_BASICAUTH_PASSWORD: mongo
-
+  redisinsight:
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - 5540:5540
+    depends_on:
+      - redis
 

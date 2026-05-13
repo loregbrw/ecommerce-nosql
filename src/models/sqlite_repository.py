@@ -184,3 +184,65 @@ class SQLiteRepository:
             )
             pedidos.append(pedido)
         return pedidos
+
+    def get_produto_resumo_by_id(self, id_produto: int) -> dict | None:
+        row = self.sqlite.query_one(
+            """
+            SELECT
+                p.id_produto,
+                p.nome,
+                p.preco_atual,
+                COALESCE(e.quantidade_disponivel, 0) AS quantidade_disponivel,
+                COALESCE(e.quantidade_reservada, 0) AS quantidade_reservada
+            FROM produto p
+            LEFT JOIN estoque e ON e.id_produto = p.id_produto
+            WHERE p.id_produto = ?
+            """,
+            (id_produto,),
+        )
+        if row is None:
+            return None
+
+        estoque = max(0, int(row["quantidade_disponivel"]) - int(row["quantidade_reservada"]))
+        return {
+            "id_produto": int(row["id_produto"]),
+            "nome": row["nome"],
+            "preco": float(row["preco_atual"]),
+            "estoque": estoque,
+        }
+
+    def get_produtos_resumo_by_ids(self, ids_produto: list[int]) -> dict[int, dict]:
+        if not ids_produto:
+            return {}
+
+        placeholders = ",".join("?" for _ in ids_produto)
+        rows = self.sqlite.query_all(
+            f"""
+            SELECT
+                p.id_produto,
+                p.nome,
+                p.preco_atual,
+                COALESCE(e.quantidade_disponivel, 0) AS quantidade_disponivel,
+                COALESCE(e.quantidade_reservada, 0) AS quantidade_reservada
+            FROM produto p
+            LEFT JOIN estoque e ON e.id_produto = p.id_produto
+            WHERE p.id_produto IN ({placeholders})
+            """,
+            tuple(ids_produto),
+        )
+
+        produtos: dict[int, dict] = {}
+        for row in rows:
+            id_produto = int(row["id_produto"])
+            estoque = max(0, int(row["quantidade_disponivel"]) - int(row["quantidade_reservada"]))
+            produtos[id_produto] = {
+                "id_produto": id_produto,
+                "nome": row["nome"],
+                "preco": float(row["preco_atual"]),
+                "estoque": estoque,
+            }
+        return produtos
+
+    def cliente_exists(self, id_cliente: int) -> bool:
+        row = self.sqlite.query_one("SELECT 1 FROM cliente WHERE id_cliente = ?", (id_cliente,))
+        return row is not None
